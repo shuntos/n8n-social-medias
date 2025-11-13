@@ -10,3 +10,7 @@ And Choose following Permissions in developers.facebook.com/tools/explorer
 ## You can test upload through developer faceook page
 
 ![Project Screenshot](src/developer_facebook.png)
+
+
+##Sample file 
+https://file-examples.com/storage/fe933120746915c0498b580/2017/04/file_example_MP4_480_1_5MG.mp4

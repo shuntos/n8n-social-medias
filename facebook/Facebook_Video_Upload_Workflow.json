@@ -1,0 +1,126 @@
+{
+  "name": "Facebook Video Upload Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Debug: Check what data is actually received\nconst inputData = $input.all();\n\nconsole.log('=== DEBUG INPUT DATA ===');\nconsole.log('Number of items:', inputData.length);\nconsole.log('Full input data:', JSON.stringify(inputData, null, 2));\n\n// Check the first item\nif (inputData.length > 0) {\n  const firstItem = inputData[0];\n  console.log('First item keys:', Object.keys(firstItem));\n  console.log('First item JSON keys:', Object.keys(firstItem.json || {}));\n  console.log('Caption value:', firstItem.json?.caption);\n  console.log('Video URL value:', firstItem.json?.video_url);\n}\n\n// Just pass through the data for now without validation\nreturn inputData.map(item => ({\n  json: {\n    ...item.json,\n    myNewField: 1,\n    debug_received: true,\n    timestamp: new Date().toISOString()\n  }\n}));"
+      },
+      "id": "e387fe1b-8513-4ca1-b5de-837f75d94fe7",
+      "name": "Process Input Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "hostUrl": "graph-video.facebook.com",
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v22.0",
+        "node": "me",
+        "edge": "videos",
+        "sendBinaryData": true,
+        "binaryPropertyName": "={{ $json.body.video_url.split('\\\\').pop() }}\n",
+        "options": {}
+      },
+      "id": "b2dba8ba-67fb-4ba8-884f-12aed23d1f10",
+      "name": "Upload to Facebook",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        608,
+        400
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "REPLACE_WITH_YOUR_FACEBOOK_API_CREDENTIAL_ID",
+          "name": "Facebook Graph account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filePath": "={{ $json.body.video_url }}",
+        "dataPropertyName": "={{ $json.body.video_url.split('\\\\').pop() }}\n"
+      },
+      "id": "5807928d-3f66-4f05-9a55-15bae76119b7",
+      "name": "Read Video File",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        352,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload_trigger",
+        "options": {}
+      },
+      "id": "b7a4bcb3-956b-4161-997c-8fe0f4824563",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        400
+      ],
+      "webhookId": "upload_trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Process Input Data": {
+      "main": [
+        [
+          {
+            "node": "Read Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Video File": {
+      "main": [
+        [
+          {
+            "node": "Upload to Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Facebook": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Process Input Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "92fdc767-0866-4638-a8e7-3373dad3b473",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "REDACTED_INSTANCE_ID"
+  },
+  "id": "6NhYaO8u2RcNPZax",
+  "tags": []
+}
